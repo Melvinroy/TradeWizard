@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir:*)",
+      "WebFetch(domain:www.tradervue.com)",
+      "WebFetch(domain:tradezella.com)",
+      "Bash(pip install:*)",
+      "Bash(python test_csv_upload.py:*)",
+      "WebFetch(domain:www.tradevue.com)",
+      "Bash(python:*)",
+      "Bash(taskkill:*)",
+      "Bash(curl:*)",
+      "Bash(cp:*)",
+      "Bash(npm run dev:*)",
+      "Bash(npm run build:*)",
+      "Bash(timeout 5s npm run dev)",
+      "Bash(cmd.exe //c \"taskkill /PID 27956 /F\")",
+      "Bash(cmd.exe //c \"taskkill /PID 20408 /F\")",
+      "Bash(cmd.exe //c \"taskkill /PID 10972 /F\")",
+      "Bash(cmd.exe:*)",
+      "Bash(timeout 10s npm run dev)",
+      "Bash(git clone:*)",
+      "Bash(uv sync:*)",
+      "Bash(ls:*)",
+      "Bash(rm:*)",
+      "Bash(git init:*)",
+      "Bash(git add:*)"
+    ],
+    "deny": []
+  }
+}
