@@ -1,208 +1,360 @@
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Link, useLocation } from 'react-router-dom';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  LayoutDashboard, 
-  TrendingUp, 
-  FileText, 
-  PieChart, 
-  Settings, 
-  Upload,
-  Tag,
-  Calendar,
+  BookOpen,
+  TrendingUp,
+  Building2,
+  Search,
+  Target,
+  Settings,
+  ChevronLeft,
+  ChevronRight,
+  PieChart,
   BarChart3,
-  Zap
+  Activity,
+  Users,
+  Bell,
+  Layers
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
-const navigationItems = [
+interface SidebarProps {
+  currentModule?: string;
+  onModuleChange?: (module: string) => void;
+  className?: string;
+}
+
+interface NavigationItem {
+  id: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  href?: string;
+  isActive?: boolean;
+  isComingSoon?: boolean;
+  description?: string;
+}
+
+const navigationItems: NavigationItem[] = [
   {
-    name: 'Dashboard',
-    href: '/dashboard',
-    icon: LayoutDashboard,
-    description: 'Overview & Stats'
+    id: 'trading-journal',
+    label: 'Trading Journal',
+    icon: BookOpen,
+    description: 'Track and analyze your trades',
+    isActive: true
   },
   {
-    name: 'Trades',
-    href: '/trades',
-    icon: TrendingUp,
-    description: 'Trade History'
-  },
-  {
-    name: 'Analytics',
-    href: '/analytics',
+    id: 'analytics',
+    label: 'Analytics',
     icon: BarChart3,
-    description: 'Performance Analysis'
+    description: 'Advanced performance metrics',
+    isComingSoon: true
   },
   {
-    name: 'Calendar',
-    href: '/calendar',
-    icon: Calendar,
-    description: 'Trading Calendar'
-  },
-  {
-    name: 'Journal',
-    href: '/journal',
-    icon: FileText,
-    description: 'Trading Notes'
-  },
-  {
-    name: 'Tags',
-    href: '/tags',
-    icon: Tag,
-    description: 'Manage Tags'
-  }
-];
-
-const quickActions = [
-  {
-    name: 'Add Trade',
+    id: 'options-flow',
+    label: 'Options Flow',
     icon: TrendingUp,
-    color: 'from-profit-500 to-profit-600',
-    action: 'add-trade'
+    description: 'Real-time options activity',
+    isComingSoon: true
   },
   {
-    name: 'Import CSV',
-    icon: Upload,
-    color: 'from-blue-500 to-blue-600',
-    action: 'import-csv'
+    id: 'congress-trades',
+    label: 'Congress Trades',
+    icon: Building2,
+    description: 'Congressional trading activity',
+    isComingSoon: true
   },
   {
-    name: 'Quick Analysis',
-    icon: Zap,
-    color: 'from-purple-500 to-purple-600',
-    action: 'quick-analysis'
+    id: 'market-scanner',
+    label: 'Market Scanner',
+    icon: Search,
+    description: 'Find trading opportunities',
+    isComingSoon: true
+  },
+  {
+    id: 'strategy-builder',
+    label: 'Strategy Builder',
+    icon: Target,
+    description: 'Create and backtest strategies',
+    isComingSoon: true
+  },
+  {
+    id: 'portfolio-tracker',
+    label: 'Portfolio',
+    icon: PieChart,
+    description: 'Portfolio management',
+    isComingSoon: true
+  },
+  {
+    id: 'community',
+    label: 'Community',
+    icon: Users,
+    description: 'Connect with traders',
+    isComingSoon: true
   }
 ];
 
-const Sidebar = () => {
-  const location = useLocation();
-  const [isCollapsed, setIsCollapsed] = useState(false);
+const bottomItems: NavigationItem[] = [
+  {
+    id: 'alerts',
+    label: 'Alerts',
+    icon: Bell,
+    description: 'Trading alerts and notifications',
+    isComingSoon: true
+  },
+  {
+    id: 'settings',
+    label: 'Settings',
+    icon: Settings,
+    description: 'Application settings'
+  }
+];
 
-  const handleQuickAction = (action: string) => {
-    // TODO: Implement quick actions
-    console.log('Quick action:', action);
+const Sidebar: React.FC<SidebarProps> = ({
+  currentModule = 'trading-journal',
+  onModuleChange,
+  className
+}) => {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [hoveredItem, setHoveredItem] = useState<string | null>(null);
+
+  const handleItemClick = (item: NavigationItem) => {
+    if (item.isComingSoon) return;
+    
+    if (onModuleChange) {
+      onModuleChange(item.id);
+    }
   };
 
-  return (
-    <>
-      {/* Desktop Sidebar */}
-      <motion.aside 
+  const SidebarItem: React.FC<{ item: NavigationItem; isBottom?: boolean }> = ({ 
+    item, 
+    isBottom = false 
+  }) => (
+    <motion.div
+      className={cn(
+        'relative group cursor-pointer',
+        item.isComingSoon && 'cursor-not-allowed'
+      )}
+      onMouseEnter={() => setHoveredItem(item.id)}
+      onMouseLeave={() => setHoveredItem(null)}
+      onClick={() => handleItemClick(item)}
+      whileHover={!item.isComingSoon ? { 
+        x: 2,
+        transition: { duration: 0.2, ease: "easeOut" }
+      } : {}}
+      whileTap={!item.isComingSoon ? { 
+        scale: 0.98,
+        transition: { duration: 0.1, ease: "easeInOut" }
+      } : {}}
+    >
+      <div
         className={cn(
-          "hidden lg:fixed lg:inset-y-0 lg:flex lg:flex-col lg:pt-16 lg:z-40 transition-all duration-300",
-          isCollapsed ? "lg:w-20" : "lg:w-64"
+          'flex items-center px-4 py-4 mx-3 rounded-xl transition-all duration-200',
+          'hover:bg-white/8 hover:border-white/15 border border-transparent',
+          item.id === currentModule && 'bg-blue-500/15 border-blue-500/30 shadow-lg shadow-blue-500/10',
+          item.isComingSoon && 'opacity-60',
+          !isCollapsed && 'justify-start',
+          isCollapsed && 'justify-center'
         )}
-        initial={{ x: -100 }}
-        animate={{ x: 0 }}
-        transition={{ duration: 0.3 }}
       >
-        <div className="flex-1 flex flex-col glass-dark border-r border-slate-700/30">
-          {/* Quick Actions */}
-          {!isCollapsed && (
-            <div className="p-4 border-b border-slate-700/30">
-              <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
-                Quick Actions
-              </h3>
-              <div className="space-y-2">
-                {quickActions.map((action) => (
-                  <motion.button
-                    key={action.name}
-                    onClick={() => handleQuickAction(action.action)}
-                    className={cn(
-                      "w-full flex items-center gap-3 p-3 rounded-xl text-sm font-medium text-white transition-all duration-200",
-                      `bg-gradient-to-r ${action.color} hover:shadow-lg hover:scale-105`
-                    )}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    <action.icon className="w-4 h-4" />
-                    {action.name}
-                  </motion.button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Navigation */}
-          <nav className="flex-1 p-4">
-            <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
-              {isCollapsed ? "Menu" : "Navigation"}
-            </h3>
-            <ul className="space-y-2">
-              {navigationItems.map((item) => {
-                const isActive = location.pathname === item.href;
-                return (
-                  <li key={item.name}>
-                    <Link to={item.href}>
-                      <motion.div
-                        className={cn(
-                          "flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-200",
-                          isActive
-                            ? "bg-blue-500/20 text-blue-400 border border-blue-500/30"
-                            : "text-gray-300 hover:text-white hover:bg-slate-700/50"
-                        )}
-                        whileHover={{ x: isActive ? 0 : 4 }}
-                      >
-                        <item.icon className={cn(
-                          "w-5 h-5 flex-shrink-0",
-                          isActive ? "text-blue-400" : "text-gray-400"
-                        )} />
-                        {!isCollapsed && (
-                          <div className="flex-1">
-                            <div className="font-medium">{item.name}</div>
-                            <div className="text-xs text-gray-500">{item.description}</div>
-                          </div>
-                        )}
-                        {isActive && !isCollapsed && (
-                          <motion.div 
-                            className="w-2 h-2 bg-blue-500 rounded-full"
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            transition={{ type: "spring", stiffness: 500 }}
-                          />
-                        )}
-                      </motion.div>
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          </nav>
-
-          {/* Bottom Section */}
-          <div className="p-4 border-t border-slate-700/30">
-            <Link to="/settings">
-              <motion.div
-                className="flex items-center gap-3 px-3 py-3 text-gray-300 hover:text-white hover:bg-slate-700/50 rounded-xl transition-all duration-200"
-                whileHover={{ x: 4 }}
-              >
-                <Settings className="w-5 h-5 text-gray-400" />
-                {!isCollapsed && <span className="text-sm font-medium">Settings</span>}
-              </motion.div>
-            </Link>
-
-            {/* Collapse Toggle */}
-            <motion.button
-              onClick={() => setIsCollapsed(!isCollapsed)}
-              className="mt-4 w-full flex items-center justify-center p-2 text-gray-400 hover:text-white hover:bg-slate-700/50 rounded-lg transition-colors duration-200"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <motion.div
-                animate={{ rotate: isCollapsed ? 180 : 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
-                </svg>
-              </motion.div>
-            </motion.button>
-          </div>
+        {/* Icon */}
+        <div className={cn(
+          'flex items-center justify-center min-w-[24px]',
+          !isCollapsed && 'mr-4',
+          item.id === currentModule && 'text-blue-400',
+          item.id !== currentModule && 'text-gray-400 group-hover:text-white'
+        )}>
+          <item.icon className="w-6 h-6" />
         </div>
-      </motion.aside>
 
-      {/* Mobile Sidebar Overlay - TODO: Implement mobile menu */}
-    </>
+        {/* Label */}
+        <AnimatePresence mode="wait">
+          {!isCollapsed && (
+            <motion.div
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ 
+                opacity: 1, 
+                x: 0,
+                transition: { duration: 0.2, delay: 0.1, ease: "easeOut" }
+              }}
+              exit={{ 
+                opacity: 0, 
+                x: -10,
+                transition: { duration: 0.15, ease: "easeIn" }
+              }}
+              className="flex items-center justify-between w-full min-w-0"
+            >
+              <div className="flex flex-col flex-1">
+                <span className={cn(
+                  'text-base font-semibold transition-colors leading-tight',
+                  item.id === currentModule && 'text-white',
+                  item.id !== currentModule && 'text-gray-200 group-hover:text-white'
+                )}>
+                  {item.label}
+                </span>
+                {!isBottom && item.description && (
+                  <span className={cn(
+                    'text-sm transition-colors mt-1 leading-tight',
+                    item.id === currentModule && 'text-blue-200',
+                    item.id !== currentModule && 'text-gray-400 group-hover:text-gray-300',
+                    item.isComingSoon && 'text-gray-500'
+                  )}>
+                    {item.description}
+                  </span>
+                )}
+              </div>
+
+              {/* Coming Soon Badge */}
+              {item.isComingSoon && (
+                <motion.span
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="px-3 py-1 text-xs font-medium bg-amber-500/20 text-amber-300 rounded-full border border-amber-500/40 shrink-0"
+                >
+                  Soon
+                </motion.span>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Tooltip for collapsed state */}
+      {isCollapsed && hoveredItem === item.id && (
+        <motion.div
+          initial={{ opacity: 0, x: -10 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -10 }}
+          className="absolute left-full top-1/2 -translate-y-1/2 ml-2 z-50"
+        >
+          <div className="bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 shadow-xl">
+            <div className="text-sm font-medium text-white">{item.label}</div>
+            {item.description && (
+              <div className="text-xs text-gray-400 mt-1">{item.description}</div>
+            )}
+            {item.isComingSoon && (
+              <div className="text-xs text-amber-400 mt-1">Coming Soon</div>
+            )}
+          </div>
+        </motion.div>
+      )}
+
+      {/* Active indicator */}
+      {item.id === currentModule && (
+        <motion.div
+          layoutId="activeIndicator"
+          className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-blue-500 rounded-r-full"
+        />
+      )}
+    </motion.div>
+  );
+
+  return (
+    <motion.aside
+      className={cn(
+        'flex flex-col h-full bg-gradient-to-b from-gray-900/95 to-gray-800/95',
+        'backdrop-blur-xl border-r border-gray-700/50',
+        'z-40 overflow-hidden',
+        'fixed lg:relative inset-y-0 left-0', // Fixed position for mobile, relative for desktop
+        isCollapsed ? 'w-16' : 'w-80',
+        className
+      )}
+      initial={false}
+      animate={{ 
+        width: isCollapsed ? 64 : 320,
+        transition: { duration: 0.3, ease: "easeInOut" }
+      }}
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between p-6 border-b border-gray-700/50">
+        <AnimatePresence mode="wait">
+          {!isCollapsed && (
+            <motion.div
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ 
+                opacity: 1, 
+                x: 0,
+                transition: { duration: 0.2, delay: 0.1, ease: "easeOut" }
+              }}
+              exit={{ 
+                opacity: 0, 
+                x: -10,
+                transition: { duration: 0.15, ease: "easeIn" }
+              }}
+              className="flex items-center gap-3 min-w-0"
+            >
+              <div className="p-2 bg-blue-500/10 rounded-lg border border-blue-500/20">
+                <Activity className="w-5 h-5 text-blue-400" />
+              </div>
+              <div>
+                <h1 className="text-lg font-bold text-white">TradeWizard</h1>
+                <p className="text-xs text-gray-400">Professional Trading Platform</p>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Collapse Toggle */}
+        <motion.button
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className={cn(
+            'p-2 rounded-lg bg-gray-700/50 hover:bg-gray-600/50',
+            'border border-gray-600/50 hover:border-gray-500/50',
+            'text-gray-400 hover:text-white transition-all duration-200'
+          )}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          {isCollapsed ? (
+            <ChevronRight className="w-4 h-4" />
+          ) : (
+            <ChevronLeft className="w-4 h-4" />
+          )}
+        </motion.button>
+      </div>
+
+      {/* Main Navigation */}
+      <div className="flex-1 py-6 overflow-y-auto">
+        <nav className="space-y-2">
+          {navigationItems.map(item => (
+            <SidebarItem key={item.id} item={item} />
+          ))}
+        </nav>
+      </div>
+
+      {/* Bottom Section */}
+      <div className="border-t border-gray-700/50 py-6">
+        <nav className="space-y-2">
+          {bottomItems.map(item => (
+            <SidebarItem key={item.id} item={item} isBottom />
+          ))}
+        </nav>
+      </div>
+
+      {/* Version Info */}
+      <AnimatePresence mode="wait">
+        {!isCollapsed && (
+          <motion.div
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ 
+              opacity: 1, 
+              x: 0,
+              transition: { duration: 0.2, delay: 0.1, ease: "easeOut" }
+            }}
+            exit={{ 
+              opacity: 0, 
+              x: -10,
+              transition: { duration: 0.15, ease: "easeIn" }
+            }}
+            className="p-4 border-t border-gray-700/50"
+          >
+            <div className="text-center">
+              <p className="text-xs text-gray-500">Version 1.0.0</p>
+              <p className="text-xs text-gray-600 mt-1">Phase 2A: UI Enhancement</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.aside>
   );
 };
 

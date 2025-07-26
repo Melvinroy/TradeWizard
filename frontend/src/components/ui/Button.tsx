@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { cn } from '../../lib/utils';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success';
   size?: 'sm' | 'md' | 'lg';
   loading?: boolean;
   children: React.ReactNode;
@@ -14,11 +14,12 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     const baseClasses = 'inline-flex items-center justify-center font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl';
     
     const variants = {
-      primary: 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl focus:ring-blue-500/50',
-      secondary: 'bg-slate-700 hover:bg-slate-600 text-white border border-slate-600 hover:border-slate-500 focus:ring-slate-500/50',
-      outline: 'border-2 border-slate-600 hover:border-slate-500 text-slate-300 hover:text-white hover:bg-slate-800/50 focus:ring-slate-500/50',
-      ghost: 'text-slate-300 hover:text-white hover:bg-slate-800/50 focus:ring-slate-500/50',
-      danger: 'bg-loss-600 hover:bg-loss-700 text-white shadow-lg hover:shadow-xl focus:ring-loss-500/50'
+      primary: 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl hover:shadow-blue-500/25 focus:ring-blue-500/50 z-10 font-semibold',
+      secondary: 'bg-gray-700/80 hover:bg-gray-600 text-white border border-gray-600/50 hover:border-gray-500 focus:ring-gray-500/50 z-10',
+      outline: 'border-2 border-gray-600/80 hover:border-gray-500 text-gray-300 hover:text-white hover:bg-gray-800/30 focus:ring-gray-500/50 z-10',
+      ghost: 'text-gray-300 hover:text-white hover:bg-gray-800/50 focus:ring-gray-500/50 z-10',
+      danger: 'bg-red-600 hover:bg-red-700 text-white shadow-lg hover:shadow-xl focus:ring-red-500/50 z-10',
+      success: 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl focus:ring-green-500/50 z-10'
     };
     
     const sizes = {
@@ -61,4 +62,6 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
 Button.displayName = 'Button';
 
+export { Button };
+export type { ButtonProps };
 export default Button;

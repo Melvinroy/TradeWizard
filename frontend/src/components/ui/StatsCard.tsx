@@ -1,13 +1,14 @@
 import { motion } from 'framer-motion';
-import { LucideIcon } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { Card, CardContent } from './Card';
 import { cn, formatCurrency, getPnLColor } from '../../lib/utils';
 
 interface StatsCardProps {
   title: string;
   value: string | number;
+  description?: string;
   change?: string;
-  trend?: 'up' | 'down' | 'neutral';
+  trend?: 'up' | 'down' | 'neutral' | 'positive';
   icon?: LucideIcon;
   gradient?: string;
   currency?: boolean;
@@ -17,6 +18,7 @@ interface StatsCardProps {
 const StatsCard = ({ 
   title, 
   value, 
+  description,
   change, 
   trend = 'neutral', 
   icon: Icon, 
@@ -27,13 +29,15 @@ const StatsCard = ({
   const trendColors = {
     up: 'text-profit-400',
     down: 'text-loss-400', 
-    neutral: 'text-gray-400'
+    neutral: 'text-gray-400',
+    positive: 'text-profit-400'
   };
 
   const trendIcons = {
     up: '↗',
     down: '↘',
-    neutral: '→'
+    neutral: '→',
+    positive: '↗'
   };
 
   const formattedValue = currency && typeof value === 'number' 
@@ -97,13 +101,17 @@ const StatsCard = ({
           )}
         </div>
         
+        {description && (
+          <p className="text-sm text-gray-500 mt-2">{description}</p>
+        )}
+
         {/* Progress bar for visual appeal */}
         {trend !== 'neutral' && (
           <div className="mt-4 h-1 bg-slate-700/50 rounded-full overflow-hidden">
             <motion.div
               className={cn(
                 "h-full rounded-full",
-                trend === 'up' ? 'bg-profit-500' : 'bg-loss-500'
+                (trend === 'up' || trend === 'positive') ? 'bg-profit-500' : 'bg-loss-500'
               )}
               initial={{ width: 0 }}
               animate={{ width: '70%' }}
@@ -116,4 +124,6 @@ const StatsCard = ({
   );
 };
 
+export { StatsCard };
+export type { StatsCardProps };
 export default StatsCard;

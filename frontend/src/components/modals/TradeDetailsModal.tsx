@@ -1,5 +1,16 @@
 import React, { useState } from 'react';
 import toast from 'react-hot-toast';
+import Modal from '../ui/Modal';
+import { 
+  Form, 
+  FormField, 
+  FormLabel 
+} from '../ui/Form';
+import Input from '../ui/Input';
+import Button from '../ui/Button';
+import { Badge } from '../ui/Badge';
+import { InlineSpinner } from '../ui/LoadingSpinner';
+import { cn } from '../../lib/utils';
 
 interface Trade {
   id: string;
@@ -52,168 +63,119 @@ const TradeDetailsModal: React.FC<TradeDetailsModalProps> = ({ trade, onClose, o
   const netAmount = trade.side === 'BUY' ? -totalValue - Number(trade.commission || 0) : totalValue - Number(trade.commission || 0);
 
   return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: 'rgba(0, 0, 0, 0.7)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      zIndex: 1000
-    }}>
-      <div style={{
-        backgroundColor: '#1f2937',
-        border: '1px solid #374151',
-        borderRadius: '12px',
-        padding: '24px',
-        width: '90%',
-        maxWidth: '600px',
-        maxHeight: '90vh',
-        overflow: 'auto'
-      }}>
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: '24px'
-        }}>
-          <h3 style={{ fontSize: '20px', fontWeight: 'bold', color: 'white', margin: 0 }}>
-            Trade Details - {trade.symbol}
-          </h3>
-          <button
-            onClick={onClose}
-            style={{
-              backgroundColor: 'transparent',
-              border: 'none',
-              color: '#9ca3af',
-              fontSize: '24px',
-              cursor: 'pointer',
-              padding: '4px'
-            }}
-          >
-            ×
-          </button>
-        </div>
+    <Modal 
+      isOpen={true} 
+      onClose={onClose} 
+      title={`Trade Details - ${trade.symbol}`}
+      size="large"
+    >
+      <div className="space-y-6">
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '24px' }}>
-          <div>
-            <div style={{ marginBottom: '12px' }}>
-              <span style={{ fontSize: '14px', color: '#9ca3af' }}>Symbol</span>
-              <p style={{ fontSize: '18px', fontWeight: 'bold', color: 'white', margin: '4px 0' }}>{trade.symbol}</p>
+        {/* Trade Information Grid */}
+        <div className="grid grid-cols-2 gap-6 p-4 bg-slate-800/30 rounded-lg">
+          <div className="space-y-4">
+            <div>
+              <span className="text-sm text-gray-400">Symbol</span>
+              <p className="text-lg font-bold text-white mt-1">{trade.symbol}</p>
             </div>
-            <div style={{ marginBottom: '12px' }}>
-              <span style={{ fontSize: '14px', color: '#9ca3af' }}>Side</span>
-              <p style={{ fontSize: '16px', color: trade.side === 'BUY' ? '#10b981' : '#ef4444', margin: '4px 0' }}>{trade.side}</p>
+            <div>
+              <span className="text-sm text-gray-400">Side</span>
+              <div className="mt-1">
+                <Badge 
+                  variant={trade.side === 'BUY' ? 'success' : 'error'} 
+                  size="lg"
+                >
+                  {trade.side}
+                </Badge>
+              </div>
             </div>
-            <div style={{ marginBottom: '12px' }}>
-              <span style={{ fontSize: '14px', color: '#9ca3af' }}>Quantity</span>
-              <p style={{ fontSize: '16px', color: 'white', margin: '4px 0' }}>{trade.quantity}</p>
+            <div>
+              <span className="text-sm text-gray-400">Quantity</span>
+              <p className="text-base text-white mt-1">{trade.quantity}</p>
             </div>
           </div>
-          <div>
-            <div style={{ marginBottom: '12px' }}>
-              <span style={{ fontSize: '14px', color: '#9ca3af' }}>Price</span>
-              <p style={{ fontSize: '16px', color: 'white', margin: '4px 0' }}>${Number(trade.price).toFixed(2)}</p>
+          <div className="space-y-4">
+            <div>
+              <span className="text-sm text-gray-400">Price</span>
+              <p className="text-base text-white mt-1">${Number(trade.price).toFixed(2)}</p>
             </div>
-            <div style={{ marginBottom: '12px' }}>
-              <span style={{ fontSize: '14px', color: '#9ca3af' }}>Total Value</span>
-              <p style={{ fontSize: '16px', color: 'white', margin: '4px 0' }}>${totalValue.toFixed(2)}</p>
+            <div>
+              <span className="text-sm text-gray-400">Total Value</span>
+              <p className="text-base text-white mt-1">${totalValue.toFixed(2)}</p>
             </div>
-            <div style={{ marginBottom: '12px' }}>
-              <span style={{ fontSize: '14px', color: '#9ca3af' }}>Net Amount</span>
-              <p style={{ fontSize: '16px', color: netAmount >= 0 ? '#10b981' : '#ef4444', margin: '4px 0' }}>
-                ${netAmount.toFixed(2)}
+            <div>
+              <span className="text-sm text-gray-400">Net Amount</span>
+              <p className={cn(
+                "text-base font-medium mt-1",
+                netAmount >= 0 ? "text-profit-400" : "text-loss-400"
+              )}>
+                ${Math.abs(netAmount).toFixed(2)}
               </p>
             </div>
           </div>
         </div>
 
-        <div style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'block', fontSize: '14px', color: '#d1d5db', marginBottom: '8px' }}>
-            Tags (comma-separated)
-          </label>
-          <input
-            type="text"
-            value={tags}
-            onChange={(e) => setTags(e.target.value)}
-            placeholder="swing trade, earnings, breakout"
-            disabled={isUpdating}
-            style={{
-              width: '100%',
-              padding: '12px',
-              backgroundColor: '#374151',
-              border: '1px solid #4b5563',
-              borderRadius: '6px',
-              color: 'white',
-              fontSize: '14px'
-            }}
-          />
-        </div>
+        {/* Form for Notes and Tags */}
+        <Form onSubmit={(e) => { e.preventDefault(); handleSaveNotes(); }}>
+          <FormField>
+            <FormLabel>Tags (comma-separated)</FormLabel>
+            <Input
+              type="text"
+              value={tags}
+              onChange={(e) => setTags(e.target.value)}
+              placeholder="swing trade, earnings, breakout"
+              disabled={isUpdating}
+            />
+          </FormField>
 
-        <div style={{ marginBottom: '24px' }}>
-          <label style={{ display: 'block', fontSize: '14px', color: '#d1d5db', marginBottom: '8px' }}>
-            Notes
-          </label>
-          <textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="Add your trade notes, strategy, observations..."
-            disabled={isUpdating}
-            rows={4}
-            style={{
-              width: '100%',
-              padding: '12px',
-              backgroundColor: '#374151',
-              border: '1px solid #4b5563',
-              borderRadius: '6px',
-              color: 'white',
-              fontSize: '14px',
-              resize: 'vertical'
-            }}
-          />
-        </div>
+          <FormField>
+            <FormLabel>Notes</FormLabel>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Add your trade notes, strategy, observations..."
+              disabled={isUpdating}
+              rows={4}
+              className={cn(
+                "w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-xl text-white",
+                "placeholder-gray-500 resize-vertical",
+                "focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50",
+                "transition-all duration-200",
+                "hover:border-slate-600/50",
+                "disabled:opacity-50 disabled:cursor-not-allowed"
+              )}
+            />
+          </FormField>
 
-        <div style={{ display: 'flex', gap: '12px', paddingTop: '16px', borderTop: '1px solid #4b5563' }}>
-          <button
-            onClick={onClose}
-            disabled={isUpdating}
-            style={{
-              flex: 1,
-              padding: '12px',
-              backgroundColor: '#4b5563',
-              color: 'white',
-              border: 'none',
-              borderRadius: '6px',
-              fontSize: '16px',
-              cursor: isUpdating ? 'not-allowed' : 'pointer',
-              opacity: isUpdating ? 0.6 : 1
-            }}
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSaveNotes}
-            disabled={isUpdating}
-            style={{
-              flex: 1,
-              padding: '12px',
-              backgroundColor: isUpdating ? '#6b7280' : '#3b82f6',
-              color: 'white',
-              border: 'none',
-              borderRadius: '6px',
-              fontSize: '16px',
-              cursor: isUpdating ? 'not-allowed' : 'pointer',
-              opacity: isUpdating ? 0.6 : 1
-            }}
-          >
-            {isUpdating ? 'Saving...' : 'Save Notes'}
-          </button>
-        </div>
+          <div className="flex gap-3 pt-6 border-t border-slate-700/50">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
+              disabled={isUpdating}
+              className="flex-1"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              variant="primary"
+              disabled={isUpdating}
+              className="flex-1"
+            >
+              {isUpdating ? (
+                <span className="flex items-center justify-center gap-2">
+                  <InlineSpinner />
+                  Saving...
+                </span>
+              ) : (
+                'Save Notes'
+              )}
+            </Button>
+          </div>
+        </Form>
       </div>
-    </div>
+    </Modal>
   );
 };
 

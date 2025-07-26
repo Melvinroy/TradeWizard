@@ -1,5 +1,16 @@
 import React, { useState } from 'react';
 import toast from 'react-hot-toast';
+import { 
+  Form, 
+  FormField, 
+  FormLabel, 
+  FormError, 
+  FormSelect 
+} from '../ui/Form';
+import Input from '../ui/Input';
+import Button from '../ui/Button';
+import { SimpleDateInput } from '../ui/DatePicker';
+import { InlineSpinner } from '../ui/LoadingSpinner';
 
 interface AddTradeFormProps {
   onClose: () => void;
@@ -18,18 +29,30 @@ const AddTradeForm: React.FC<AddTradeFormProps> = ({ onClose, onTradeAdded }) =>
     currency: 'USD'
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const isFormValid = () => {
-    return formData.symbol.trim() && 
-           formData.quantity && Number(formData.quantity) > 0 &&
-           formData.price && Number(formData.price) > 0;
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+    
+    if (!formData.symbol.trim()) {
+      newErrors.symbol = 'Symbol is required';
+    }
+    if (!formData.quantity || Number(formData.quantity) <= 0) {
+      newErrors.quantity = 'Quantity must be greater than 0';
+    }
+    if (!formData.price || Number(formData.price) <= 0) {
+      newErrors.price = 'Price must be greater than 0';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!isFormValid()) {
-      toast.error('Please fill in all required fields');
+    if (!validateForm()) {
+      toast.error('Please fix the errors in the form');
       return;
     }
     
@@ -77,69 +100,43 @@ const AddTradeForm: React.FC<AddTradeFormProps> = ({ onClose, onTradeAdded }) =>
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    // Clear error for this field when user types
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: '' }));
+    }
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{color: 'white'}}>
-      <div style={{marginBottom: '16px'}}>
-        <label style={{
-          display: 'block',
-          fontSize: '14px',
-          color: '#d1d5db',
-          marginBottom: '8px'
-        }}>Symbol *</label>
-        <input
+    <Form onSubmit={handleSubmit}>
+      <FormField error={!!errors.symbol}>
+        <FormLabel required>Symbol</FormLabel>
+        <Input
           type="text"
           value={formData.symbol}
           onChange={(e) => handleInputChange('symbol', e.target.value.toUpperCase())}
           placeholder="e.g., AAPL"
           disabled={isSubmitting}
-          style={{
-            width: '100%',
-            padding: '12px',
-            backgroundColor: '#374151',
-            border: '1px solid #4b5563',
-            borderRadius: '6px',
-            color: 'white',
-            fontSize: '16px'
-          }}
+          error={errors.symbol}
         />
-      </div>
+        {errors.symbol && <FormError>{errors.symbol}</FormError>}
+      </FormField>
       
-      <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px'}}>
-        <div>
-          <label style={{
-            display: 'block',
-            fontSize: '14px',
-            color: '#d1d5db',
-            marginBottom: '8px'
-          }}>Side *</label>
-          <select 
+      <div className="grid grid-cols-2 gap-4">
+        <FormField>
+          <FormLabel required>Side</FormLabel>
+          <FormSelect
             value={formData.side}
             onChange={(e) => handleInputChange('side', e.target.value)}
             disabled={isSubmitting}
-            style={{
-              width: '100%',
-              padding: '12px',
-              backgroundColor: '#374151',
-              border: '1px solid #4b5563',
-              borderRadius: '6px',
-              color: 'white',
-              fontSize: '16px'
-            }}>
+          >
             <option value="BUY">BUY</option>
             <option value="SELL">SELL</option>
-          </select>
-        </div>
+          </FormSelect>
+        </FormField>
         
-        <div>
-          <label style={{
-            display: 'block',
-            fontSize: '14px',
-            color: '#d1d5db',
-            marginBottom: '8px'
-          }}>Quantity *</label>
-          <input
+        <FormField error={!!errors.quantity}>
+          <FormLabel required>Quantity</FormLabel>
+          <Input
             type="number"
             value={formData.quantity}
             onChange={(e) => handleInputChange('quantity', e.target.value)}
@@ -147,27 +144,15 @@ const AddTradeForm: React.FC<AddTradeFormProps> = ({ onClose, onTradeAdded }) =>
             min="1"
             step="1"
             disabled={isSubmitting}
-            style={{
-              width: '100%',
-              padding: '12px',
-              backgroundColor: '#374151',
-              border: '1px solid #4b5563',
-              borderRadius: '6px',
-              color: 'white',
-              fontSize: '16px'
-            }}
+            error={errors.quantity}
           />
-        </div>
+          {errors.quantity && <FormError>{errors.quantity}</FormError>}
+        </FormField>
       </div>
       
-      <div style={{marginBottom: '20px'}}>
-        <label style={{
-          display: 'block',
-          fontSize: '14px',
-          color: '#d1d5db',
-          marginBottom: '8px'
-        }}>Price *</label>
-        <input
+      <FormField error={!!errors.price}>
+        <FormLabel required>Price</FormLabel>
+        <Input
           type="number"
           value={formData.price}
           onChange={(e) => handleInputChange('price', e.target.value)}
@@ -175,56 +160,88 @@ const AddTradeForm: React.FC<AddTradeFormProps> = ({ onClose, onTradeAdded }) =>
           min="0.01"
           step="0.01"
           disabled={isSubmitting}
-          style={{
-            width: '100%',
-            padding: '12px',
-            backgroundColor: '#374151',
-            border: '1px solid #4b5563',
-            borderRadius: '6px',
-            color: 'white',
-            fontSize: '16px'
-          }}
+          error={errors.price}
         />
+        {errors.price && <FormError>{errors.price}</FormError>}
+      </FormField>
+      
+      <div className="grid grid-cols-2 gap-4">
+        <FormField>
+          <FormLabel>Trade Date</FormLabel>
+          <SimpleDateInput
+            value={formData.trade_date}
+            onChange={(date) => handleInputChange('trade_date', date)}
+            disabled={isSubmitting}
+          />
+        </FormField>
+        
+        <FormField>
+          <FormLabel>Trade Time</FormLabel>
+          <Input
+            type="time"
+            value={formData.trade_time}
+            onChange={(e) => handleInputChange('trade_time', e.target.value)}
+            disabled={isSubmitting}
+          />
+        </FormField>
       </div>
       
-      <div style={{display: 'flex', gap: '12px', paddingTop: '16px', borderTop: '1px solid #4b5563'}}>
-        <button
+      <div className="grid grid-cols-2 gap-4">
+        <FormField>
+          <FormLabel>Commission</FormLabel>
+          <Input
+            type="number"
+            value={formData.commission}
+            onChange={(e) => handleInputChange('commission', e.target.value)}
+            placeholder="1.00"
+            min="0"
+            step="0.01"
+            disabled={isSubmitting}
+          />
+        </FormField>
+        
+        <FormField>
+          <FormLabel>Currency</FormLabel>
+          <FormSelect
+            value={formData.currency}
+            onChange={(e) => handleInputChange('currency', e.target.value)}
+            disabled={isSubmitting}
+          >
+            <option value="USD">USD</option>
+            <option value="EUR">EUR</option>
+            <option value="GBP">GBP</option>
+            <option value="JPY">JPY</option>
+          </FormSelect>
+        </FormField>
+      </div>
+      
+      <div className="flex gap-3 pt-6 border-t border-slate-700/50">
+        <Button
           type="button"
+          variant="outline"
           onClick={onClose}
           disabled={isSubmitting}
-          style={{
-            flex: 1,
-            padding: '12px',
-            backgroundColor: '#4b5563',
-            color: 'white',
-            border: 'none',
-            borderRadius: '6px',
-            fontSize: '16px',
-            cursor: isSubmitting ? 'not-allowed' : 'pointer',
-            opacity: isSubmitting ? 0.6 : 1
-          }}
+          className="flex-1"
         >
           Cancel
-        </button>
-        <button
+        </Button>
+        <Button
           type="submit"
-          disabled={isSubmitting || !isFormValid()}
-          style={{
-            flex: 1,
-            padding: '12px',
-            backgroundColor: isSubmitting || !isFormValid() ? '#6b7280' : '#3b82f6',
-            color: 'white',
-            border: 'none',
-            borderRadius: '6px',
-            fontSize: '16px',
-            cursor: isSubmitting || !isFormValid() ? 'not-allowed' : 'pointer',
-            opacity: isSubmitting || !isFormValid() ? 0.6 : 1
-          }}
+          variant="primary"
+          disabled={isSubmitting}
+          className="flex-1"
         >
-          {isSubmitting ? 'Adding Trade...' : 'Add Trade'}
-        </button>
+          {isSubmitting ? (
+            <span className="flex items-center justify-center gap-2">
+              <InlineSpinner />
+              Adding Trade...
+            </span>
+          ) : (
+            'Add Trade'
+          )}
+        </Button>
       </div>
-    </form>
+    </Form>
   );
 };
 

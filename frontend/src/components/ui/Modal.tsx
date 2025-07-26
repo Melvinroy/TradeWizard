@@ -1,4 +1,4 @@
-import { Fragment, ReactNode } from 'react';
+import { Fragment, type ReactNode } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { motion } from 'framer-motion';
 import { X } from 'lucide-react';
@@ -11,6 +11,7 @@ interface ModalProps {
   description?: string;
   children: ReactNode;
   maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '4xl';
+  size?: 'small' | 'medium' | 'large' | 'xlarge';
   showCloseButton?: boolean;
   className?: string;
 }
@@ -22,6 +23,7 @@ const Modal = ({
   description,
   children,
   maxWidth = 'lg',
+  size,
   showCloseButton = true,
   className
 }: ModalProps) => {
@@ -33,6 +35,15 @@ const Modal = ({
     '2xl': 'max-w-2xl',
     '4xl': 'max-w-4xl'
   };
+
+  const sizeClasses = {
+    small: 'max-w-sm',
+    medium: 'max-w-md',
+    large: 'max-w-2xl',
+    xlarge: 'max-w-4xl'
+  };
+
+  const effectiveMaxWidth = size ? sizeClasses[size] : maxWidthClasses[maxWidth];
 
   return (
     <Transition appear show={isOpen} as={Fragment}>
@@ -70,7 +81,7 @@ const Modal = ({
                 className={cn(
                   'w-full transform overflow-hidden rounded-3xl text-left align-middle shadow-2xl transition-all',
                   'glass-dark border border-slate-700/50',
-                  maxWidthClasses[maxWidth],
+                  effectiveMaxWidth,
                   className
                 )}
               >
@@ -151,3 +162,4 @@ export const ModalFooter = ({ children, className }: ModalFooterProps) => (
 );
 
 export default Modal;
+export type { ModalProps };

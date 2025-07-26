@@ -8,8 +8,21 @@ import { extractFilesFromDragEvent, isValidCSVFile, hasFileInDragEvent, extractF
 // Component imports
 import SimpleChart from './components/charts/SimpleChart';
 import PortfolioChart from './components/charts/PortfolioChart';
+import EquityCurveChart from './components/charts/EquityCurveChart';
+import EnhancedEquityCurveChart from './components/charts/EnhancedEquityCurveChart';
 import TradeDetailsModal from './components/modals/TradeDetailsModal';
 import AddTradeForm from './components/forms/AddTradeForm';
+import Sidebar from './components/layout/Sidebar';
+import TradingJournalLayout from './components/trading-journal/TradingJournalLayout';
+import EnhancedKPIDashboard from './components/dashboard/EnhancedKPIDashboard';
+import EnhancedTradeTable from './components/tables/EnhancedTradeTable';
+import VirtualizedTradeTable from './components/tables/VirtualizedTradeTable';
+import { Badge } from './components/ui/Badge';
+import { StatsCard } from './components/ui/StatsCard';
+import { Button } from './components/ui/Button';
+import { Input } from './components/ui/Input';
+import { FormSelect } from './components/ui/Form';
+import { Target, BarChart3 } from 'lucide-react';
 
 // Interfaces
 interface Trade {
@@ -30,6 +43,12 @@ interface DashboardStats {
   total_pnl: number;
   win_rate: number;
   best_trade: number;
+  worst_trade?: number;
+  avg_win?: number;
+  avg_loss?: number;
+  profit_factor?: number;
+  sharpe_ratio?: number;
+  max_drawdown?: number;
 }
 
 // Loading Screen Component
@@ -116,13 +135,7 @@ const DashboardPage = () => {
   const [showChartModal, setShowChartModal] = useState(false);
   const [selectedTrade, setSelectedTrade] = useState<Trade | null>(null);
   const [showTradeDetails, setShowTradeDetails] = useState(false);
-  const [sortField, setSortField] = useState<string>('trade_date');
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
-  const [filterSide, setFilterSide] = useState<'all' | 'BUY' | 'SELL'>('all');
-  const [filterSymbol, setFilterSymbol] = useState<string>('all');
-  const [searchTerm, setSearchTerm] = useState<string>('');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
+  const [currentModule, setCurrentModule] = useState('trading-journal');
 
   useEffect(() => {
     const loadData = async () => {
@@ -285,415 +298,149 @@ const DashboardPage = () => {
     toast.success(`Exported ${trades.length} trades to CSV`);
   };
 
-  // Table Helper Functions
-  const handleSort = (field: string) => {
-    if (sortField === field) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortField(field);
-      setSortDirection('desc');
-    }
-    setCurrentPage(1);
-  };
-
-  const getFilteredAndSortedTrades = () => {
-    let filtered = trades.filter(trade => {
-      const matchesSearch = trade.symbol.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           trade.side.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesSide = filterSide === 'all' || trade.side === filterSide;
-      const matchesSymbol = filterSymbol === 'all' || trade.symbol === filterSymbol;
-      
-      return matchesSearch && matchesSide && matchesSymbol;
-    });
-
-    filtered.sort((a, b) => {
-      let aValue = a[sortField as keyof Trade];
-      let bValue = b[sortField as keyof Trade];
-
-      if (sortField === 'trade_date') {
-        aValue = new Date(aValue as string).getTime();
-        bValue = new Date(bValue as string).getTime();
-      } else if (sortField === 'price' || sortField === 'quantity') {
-        aValue = Number(aValue);
-        bValue = Number(bValue);
-      }
-
-      if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
-      if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
-      return 0;
-    });
-
-    return filtered;
-  };
-
-  const filteredTrades = getFilteredAndSortedTrades();
-  const totalPages = Math.ceil(filteredTrades.length / itemsPerPage);
-  const paginatedTrades = filteredTrades.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
-
-  const uniqueSymbols = [...new Set(trades.map(trade => trade.symbol))].sort();
 
   if (isLoading) {
     return <div className="min-h-screen flex items-center justify-center text-white">Loading dashboard...</div>;
   }
 
   return (
-    <div className="min-h-screen p-6">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold gradient-text">TradeWizard Dashboard</h1>
-          <p className="text-gray-400 mt-1">Welcome back, {user?.email}</p>
-        </div>
-        <button onClick={logout} className="btn btn-primary">
-          Logout
-        </button>
+    <div className="min-h-screen flex bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 relative">
+      {/* Background gradient mesh */}
+      <div className="absolute inset-0 opacity-30">
+        <div className="absolute top-0 -left-4 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
+        <div className="absolute top-0 -right-4 w-72 h-72 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
+        <div className="absolute -bottom-8 left-20 w-72 h-72 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
       </div>
+      {/* Sidebar */}
+      <Sidebar 
+        currentModule={currentModule}
+        onModuleChange={setCurrentModule}
+      />
 
-      {/* CSV Import Section */}
-      <div 
-        className={`glass-dark p-4 mb-6 transition-all duration-200 ${
-          isDragOver ? 'ring-2 ring-blue-400 ring-opacity-50' : ''
-        }`}
-        onDragEnter={handleDragEnter}
-        onDragLeave={handleDragLeave}
-        onDragOver={handleDragOver}
-        onDrop={handleDrop}
-      >
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-bold text-white">📄 Import IBKR CSV</h2>
-          <div 
-            className={`inline-flex items-center gap-2 border border-dashed rounded-lg px-4 py-2 cursor-pointer transition-all duration-200 ${
-              isDragOver 
-                ? 'border-blue-400 bg-blue-500/10' 
-                : 'border-gray-600 hover:border-gray-500 hover:bg-gray-700/30'
-            }`}
-            onClick={() => document.getElementById('csv-upload')?.click()}
-          >
-            <svg className={`w-4 h-4 transition-colors ${isDragOver ? 'text-blue-400' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-            </svg>
-            <span className={`text-sm transition-colors ${isDragOver ? 'text-blue-300' : 'text-white'}`}>
-              {isDragOver ? 'Drop here' : 'Upload CSV'}
-            </span>
-          </div>
-        </div>
-        <input
-          id="csv-upload"
-          type="file"
-          accept=".csv"
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (file) {
-              handleCSVUpload(file);
-            }
-          }}
-          className="hidden"
-        />
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="glass-dark p-6">
-          <h3 className="text-gray-400 text-sm font-medium mb-2">Total P&L</h3>
-          <p className="text-3xl font-bold text-white">
-            ${dashboardStats ? Number(dashboardStats.total_pnl).toFixed(2) : '0.00'}
-          </p>
-          <p className="text-sm text-green-400 mt-1">Real data</p>
-        </div>
-        
-        <div className="glass-dark p-6">
-          <h3 className="text-gray-400 text-sm font-medium mb-2">Total Trades</h3>
-          <p className="text-3xl font-bold text-white">
-            {dashboardStats?.total_trades || 0}
-          </p>
-          <p className="text-sm text-blue-400 mt-1">All time</p>
-        </div>
-        
-        <div className="glass-dark p-6">
-          <h3 className="text-gray-400 text-sm font-medium mb-2">Win Rate</h3>
-          <p className="text-3xl font-bold text-white">
-            {dashboardStats && dashboardStats.win_rate ? dashboardStats.win_rate.toFixed(1) : '0.0'}%
-          </p>
-          <p className="text-sm text-green-400 mt-1">Success rate</p>
-        </div>
-        
-        <div className="glass-dark p-6">
-          <h3 className="text-gray-400 text-sm font-medium mb-2">Best Trade</h3>
-          <p className="text-3xl font-bold text-white">
-            ${dashboardStats ? Number(dashboardStats.best_trade).toFixed(2) : '0.00'}
-          </p>
-          <p className="text-sm text-gray-400 mt-1">Top performer</p>
-        </div>
-      </div>
-
-      {/* Chart Section */}
-      <div className="glass-dark p-4 mb-6">
-        <div className="flex justify-between items-center mb-3">
-          <h2 className="text-lg font-bold text-white">Performance Analytics</h2>
-          <button
-            onClick={() => setShowChartModal(true)}
-            className="px-3 py-1 text-sm bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-colors flex items-center gap-1"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-            </svg>
-            View Charts
-          </button>
-        </div>
-        {trades.length >= 1 ? (
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-            <div style={{ height: '300px' }}>
-              <SimpleChart trades={trades} />
-            </div>
-            <div style={{ height: '300px' }}>
-              <PortfolioChart trades={trades} />
-            </div>
-          </div>
-        ) : (
-          <div className="text-center text-gray-400 py-6">
-            <svg className="w-12 h-12 mx-auto mb-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-            </svg>
-            <p className="text-base font-medium mb-1">Charts Available Soon</p>
-            <p className="text-sm">Upload trades to see analytics</p>
-          </div>
-        )}
-      </div>
-
-      {/* Trade History Section */}
-      <div className="glass-dark p-6">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold text-white">Trade History ({filteredTrades.length} of {trades.length})</h2>
-          <div className="flex gap-3">
-            <button
-              onClick={exportToCSV}
-              className="px-3 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-1"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col min-h-screen">
+        {/* Top Header */}
+        <div className="flex items-center justify-between p-4 lg:p-6 border-b border-gray-700/50 bg-gray-900/30 backdrop-blur-xl relative z-10">
+          <div className="flex items-center gap-4">
+            {/* Mobile menu button */}
+            <button className="lg:hidden p-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-700/50">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
-              Export CSV
             </button>
-            <button
-              onClick={() => setShowAddTradeModal(true)}
-              className="btn btn-primary"
-            >
-              + Add Trade
-            </button>
-          </div>
-        </div>
-
-        {/* Filters and Search */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <input
-            type="text"
-            placeholder="Search trades..."
-            value={searchTerm}
-            onChange={(e) => {
-              setSearchTerm(e.target.value);
-              setCurrentPage(1);
-            }}
-            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <select
-            value={filterSide}
-            onChange={(e) => {
-              setFilterSide(e.target.value as 'all' | 'BUY' | 'SELL');
-              setCurrentPage(1);
-            }}
-            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="all">All Sides</option>
-            <option value="BUY">BUY Only</option>
-            <option value="SELL">SELL Only</option>
-          </select>
-          <select
-            value={filterSymbol}
-            onChange={(e) => {
-              setFilterSymbol(e.target.value);
-              setCurrentPage(1);
-            }}
-            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="all">All Symbols</option>
-            {uniqueSymbols.map(symbol => (
-              <option key={symbol} value={symbol}>{symbol}</option>
-            ))}
-          </select>
-          <button
-            onClick={() => {
-              setSearchTerm('');
-              setFilterSide('all');
-              setFilterSymbol('all');
-              setCurrentPage(1);
-            }}
-            className="w-full px-3 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-lg transition-colors"
-          >
-            Clear Filters
-          </button>
-        </div>
-
-        {/* Trade Table */}
-        {filteredTrades.length > 0 ? (
-          <>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm text-white">
-                <thead className="bg-gray-800/50">
-                  <tr>
-                    <th 
-                      className="px-4 py-3 text-left cursor-pointer hover:bg-gray-700/50 transition-colors"
-                      onClick={() => handleSort('symbol')}
-                    >
-                      <div className="flex items-center gap-2">
-                        Symbol
-                        {sortField === 'symbol' && (
-                          <span className="text-blue-400">
-                            {sortDirection === 'asc' ? '↑' : '↓'}
-                          </span>
-                        )}
-                      </div>
-                    </th>
-                    <th 
-                      className="px-4 py-3 text-left cursor-pointer hover:bg-gray-700/50 transition-colors"
-                      onClick={() => handleSort('side')}
-                    >
-                      <div className="flex items-center gap-2">
-                        Side
-                        {sortField === 'side' && (
-                          <span className="text-blue-400">
-                            {sortDirection === 'asc' ? '↑' : '↓'}
-                          </span>
-                        )}
-                      </div>
-                    </th>
-                    <th 
-                      className="px-4 py-3 text-right cursor-pointer hover:bg-gray-700/50 transition-colors"
-                      onClick={() => handleSort('quantity')}
-                    >
-                      <div className="flex items-center justify-end gap-2">
-                        Quantity
-                        {sortField === 'quantity' && (
-                          <span className="text-blue-400">
-                            {sortDirection === 'asc' ? '↑' : '↓'}
-                          </span>
-                        )}
-                      </div>
-                    </th>
-                    <th 
-                      className="px-4 py-3 text-right cursor-pointer hover:bg-gray-700/50 transition-colors"
-                      onClick={() => handleSort('price')}
-                    >
-                      <div className="flex items-center justify-end gap-2">
-                        Price
-                        {sortField === 'price' && (
-                          <span className="text-blue-400">
-                            {sortDirection === 'asc' ? '↑' : '↓'}
-                          </span>
-                        )}
-                      </div>
-                    </th>
-                    <th 
-                      className="px-4 py-3 text-right cursor-pointer hover:bg-gray-700/50 transition-colors"
-                      onClick={() => handleSort('trade_date')}
-                    >
-                      <div className="flex items-center justify-end gap-2">
-                        Date
-                        {sortField === 'trade_date' && (
-                          <span className="text-blue-400">
-                            {sortDirection === 'asc' ? '↑' : '↓'}
-                          </span>
-                        )}
-                      </div>
-                    </th>
-                    <th className="px-4 py-3 text-right">Total Value</th>
-                    <th className="px-4 py-3 text-center">Tags</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {paginatedTrades.map((trade: Trade, index: number) => (
-                    <tr 
-                      key={trade.id}
-                      className={`border-t border-gray-700 hover:bg-gray-800/30 cursor-pointer transition-colors ${
-                        index % 2 === 0 ? 'bg-gray-800/10' : 'bg-gray-800/20'
-                      }`}
-                      onClick={() => {
-                        setSelectedTrade(trade);
-                        setShowTradeDetails(true);
-                      }}
-                    >
-                      <td className="px-4 py-3 font-mono font-semibold">{trade.symbol}</td>
-                      <td className="px-4 py-3">
-                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                          trade.side === 'BUY' ? 'bg-green-600/20 text-green-300' : 'bg-red-600/20 text-red-300'
-                        }`}>
-                          {trade.side}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-right font-mono">{Number(trade.quantity).toLocaleString()}</td>
-                      <td className="px-4 py-3 text-right font-mono">${Number(trade.price).toFixed(2)}</td>
-                      <td className="px-4 py-3 text-right text-sm text-gray-300">
-                        {new Date(trade.trade_date).toLocaleDateString()}
-                      </td>
-                      <td className="px-4 py-3 text-right font-mono font-semibold">
-                        ${(Number(trade.price) * Number(trade.quantity)).toFixed(2)}
-                      </td>
-                      <td className="px-4 py-3 text-center">
-                        {trade.tags ? (
-                          <div className="flex justify-center gap-1">
-                            {trade.tags.split(',').slice(0, 2).map((tag: string, tagIndex: number) => (
-                              <span 
-                                key={tagIndex}
-                                className="px-2 py-1 text-xs bg-blue-600/20 text-blue-300 rounded-full"
-                              >
-                                {tag.trim()}
-                              </span>
-                            ))}
-                          </div>
-                        ) : (
-                          <span className="text-gray-500 text-xs">-</span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            
+            <div>
+              <h1 className="text-lg lg:text-xl font-bold text-white">Trading Journal</h1>
+              <p className="text-gray-400 text-xs lg:text-sm mt-1 hidden sm:block">Welcome back, {user?.email}</p>
             </div>
+          </div>
+          
+          <Button variant="outline" onClick={logout} size="sm">
+            <span className="hidden sm:inline">Logout</span>
+            <span className="sm:hidden">⚪</span>
+          </Button>
+        </div>
 
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="flex justify-between items-center mt-4">
-                <div className="text-sm text-gray-400">
-                  Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, filteredTrades.length)} of {filteredTrades.length} trades
+        {/* Enhanced Dashboard Layout */}
+        <div className="flex-1 overflow-y-auto">
+          {/* Enhanced KPI Dashboard */}
+          <EnhancedKPIDashboard
+            stats={dashboardStats || {
+              total_trades: 0,
+              total_pnl: 0,
+              win_rate: 0,
+              best_trade: 0,
+              worst_trade: 0,
+              avg_win: 0,
+              avg_loss: 0,
+              profit_factor: 0,
+              sharpe_ratio: 0,
+              max_drawdown: 0
+            }}
+            trades={trades}
+            onAddTrade={() => setShowAddTradeModal(true)}
+            onImportCSV={() => document.getElementById('csv-upload')?.click()}
+            onExportData={exportToCSV}
+          />
+
+          {/* CSV Import (Hidden Input) */}
+          <input
+            id="csv-upload"
+            type="file"
+            accept=".csv"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) {
+                handleCSVUpload(file);
+              }
+            }}
+            className="hidden"
+          />
+
+          {/* Enhanced Charts Section */}
+          <div className="px-6 lg:px-8 pb-8 space-y-8">
+            {/* Main Enhanced Equity Curve - Full Width */}
+            <EnhancedEquityCurveChart
+              trades={trades}
+              height={450}
+              showDrawdowns={true}
+              timeframe="1M"
+              className="w-full"
+            />
+            
+            {/* Supporting Charts - Responsive Grid */}
+            {trades.length >= 1 && (
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8">
+                <div className="glass-card p-6 lg:p-8 rounded-2xl min-h-[380px] backdrop-blur-xl bg-slate-800/40 border border-slate-700/30 shadow-xl hover:shadow-2xl transition-all duration-300">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="p-2 bg-blue-500/10 rounded-lg">
+                      <BarChart3 className="w-5 h-5 text-blue-400" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-white tracking-tight">Daily P&L Distribution</h3>
+                      <p className="text-slate-400 text-sm">Trading performance by day</p>
+                    </div>
+                  </div>
+                  <div className="h-[280px] min-h-[250px] w-full overflow-hidden">
+                    <SimpleChart trades={trades} />
+                  </div>
                 </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                    disabled={currentPage === 1}
-                    className="px-3 py-2 bg-gray-700 hover:bg-gray-600 disabled:bg-gray-800 disabled:text-gray-500 text-white rounded-lg transition-colors"
-                  >
-                    Previous
-                  </button>
-                  <span className="px-3 py-2 bg-gray-800 text-white rounded-lg">
-                    {currentPage} / {totalPages}
-                  </span>
-                  <button
-                    onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                    disabled={currentPage === totalPages}
-                    className="px-3 py-2 bg-gray-700 hover:bg-gray-600 disabled:bg-gray-800 disabled:text-gray-500 text-white rounded-lg transition-colors"
-                  >
-                    Next
-                  </button>
+                
+                <div className="glass-card p-6 lg:p-8 rounded-2xl min-h-[380px] backdrop-blur-xl bg-slate-800/40 border border-slate-700/30 shadow-xl hover:shadow-2xl transition-all duration-300">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="p-2 bg-emerald-500/10 rounded-lg">
+                      <Target className="w-5 h-5 text-emerald-400" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-white tracking-tight">Portfolio Overview</h3>
+                      <p className="text-slate-400 text-sm">Asset allocation and performance</p>
+                    </div>
+                  </div>
+                  <div className="h-[280px] min-h-[250px] w-full overflow-hidden">
+                    <PortfolioChart trades={trades} />
+                  </div>
                 </div>
               </div>
             )}
-          </>
-        ) : (
-          <div className="text-center text-gray-400 py-8">
-            No trades found. Upload a CSV file to get started.
+
+            {/* Enhanced Virtualized Trade Table */}
+            <div className="mt-8">
+              <VirtualizedTradeTable
+                trades={trades}
+                onRowClick={(trade) => {
+                  setSelectedTrade(trade);
+                  setShowTradeDetails(true);
+                }}
+                onEditTrade={(trade) => {
+                  setSelectedTrade(trade);
+                  setShowAddTradeModal(true);
+                }}
+                height={600}
+                loading={isLoading}
+              />
+            </div>
           </div>
-        )}
+        </div>
       </div>
 
       {/* Modals */}

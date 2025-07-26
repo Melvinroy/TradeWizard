@@ -1,0 +1,297 @@
+/* TradeWizard Modern Design System - 2024 */
+
+/* ===== SPACING SYSTEM ===== */
+:root {
+  /* Base spacing unit: 4px */
+  --space-0: 0;
+  --space-1: 0.25rem;  /* 4px */
+  --space-2: 0.5rem;   /* 8px */
+  --space-3: 0.75rem;  /* 12px */
+  --space-4: 1rem;     /* 16px */
+  --space-5: 1.25rem;  /* 20px */
+  --space-6: 1.5rem;   /* 24px */
+  --space-8: 2rem;     /* 32px */
+  --space-10: 2.5rem;  /* 40px */
+  --space-12: 3rem;    /* 48px */
+  --space-16: 4rem;    /* 64px */
+  --space-20: 5rem;    /* 80px */
+  --space-24: 6rem;    /* 96px */
+}
+
+/* ===== TYPOGRAPHY SYSTEM ===== */
+:root {
+  /* Font Sizes - Modern Scale */
+  --text-xs: 0.75rem;    /* 12px */
+  --text-sm: 0.875rem;   /* 14px */
+  --text-base: 1rem;     /* 16px */
+  --text-lg: 1.125rem;   /* 18px */
+  --text-xl: 1.25rem;    /* 20px */
+  --text-2xl: 1.5rem;    /* 24px */
+  --text-3xl: 1.875rem;  /* 30px */
+  --text-4xl: 2.25rem;   /* 36px */
+  --text-5xl: 3rem;      /* 48px */
+  --text-6xl: 3.75rem;   /* 60px */
+  
+  /* Font Weights */
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+  --font-extrabold: 800;
+  
+  /* Line Heights */
+  --leading-tight: 1.25;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.75;
+  
+  /* Letter Spacing */
+  --tracking-tight: -0.025em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.025em;
+}
+
+/* ===== COLOR SYSTEM WITH MODERN GRADIENTS ===== */
+:root {
+  /* Primary Colors */
+  --color-primary-50: #eff6ff;
+  --color-primary-100: #dbeafe;
+  --color-primary-200: #bfdbfe;
+  --color-primary-300: #93c5fd;
+  --color-primary-400: #60a5fa;
+  --color-primary-500: #3b82f6;
+  --color-primary-600: #2563eb;
+  --color-primary-700: #1d4ed8;
+  --color-primary-800: #1e40af;
+  --color-primary-900: #1e3a8a;
+  
+  /* Gradient Definitions */
+  --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --gradient-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  --gradient-danger: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  --gradient-dark: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+  --gradient-mesh: radial-gradient(at 40% 20%, hsla(240, 100%, 74%, 0.1) 0px, transparent 50%),
+                   radial-gradient(at 80% 0%, hsla(189, 100%, 56%, 0.1) 0px, transparent 50%),
+                   radial-gradient(at 0% 50%, hsla(355, 100%, 65%, 0.1) 0px, transparent 50%);
+  
+  /* Glass Effect Colors */
+  --glass-bg: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  --glass-blur: 20px;
+}
+
+/* ===== DEPTH & SHADOWS ===== */
+:root {
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-base: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  --shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+  
+  /* Glow Effects */
+  --glow-primary: 0 0 20px rgba(59, 130, 246, 0.5);
+  --glow-success: 0 0 20px rgba(16, 185, 129, 0.5);
+  --glow-danger: 0 0 20px rgba(239, 68, 68, 0.5);
+}
+
+/* ===== BORDER RADIUS ===== */
+:root {
+  --radius-sm: 0.375rem;   /* 6px */
+  --radius-base: 0.5rem;   /* 8px */
+  --radius-md: 0.75rem;    /* 12px */
+  --radius-lg: 1rem;       /* 16px */
+  --radius-xl: 1.25rem;    /* 20px */
+  --radius-2xl: 1.5rem;    /* 24px */
+  --radius-full: 9999px;
+}
+
+/* ===== MODERN COMPONENT STYLES ===== */
+
+/* Glass Card Component */
+.glass-card-modern {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-glass);
+  padding: var(--space-6);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card-modern:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-2xl);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Bold Typography Classes */
+.heading-display {
+  font-size: var(--text-6xl);
+  font-weight: var(--font-extrabold);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.heading-1 {
+  font-size: var(--text-5xl);
+  font-weight: var(--font-bold);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+}
+
+.heading-2 {
+  font-size: var(--text-4xl);
+  font-weight: var(--font-bold);
+  line-height: var(--leading-tight);
+}
+
+.heading-3 {
+  font-size: var(--text-3xl);
+  font-weight: var(--font-semibold);
+  line-height: var(--leading-normal);
+}
+
+.heading-4 {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-semibold);
+  line-height: var(--leading-normal);
+}
+
+.text-body {
+  font-size: var(--text-base);
+  font-weight: var(--font-normal);
+  line-height: var(--leading-normal);
+}
+
+.text-caption {
+  font-size: var(--text-sm);
+  font-weight: var(--font-normal);
+  line-height: var(--leading-normal);
+  opacity: 0.8;
+}
+
+/* Modern Button Styles */
+.btn-modern {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-3) var(--space-6);
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  border-radius: var(--radius-lg);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-modern-primary {
+  background: var(--gradient-primary);
+  color: white;
+  border: none;
+  box-shadow: var(--shadow-lg);
+}
+
+.btn-modern-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-xl), var(--glow-primary);
+}
+
+.btn-modern-primary:active {
+  transform: translateY(0);
+}
+
+/* Gradient Overlay Effects */
+.gradient-overlay {
+  position: relative;
+  overflow: hidden;
+}
+
+.gradient-overlay::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--gradient-mesh);
+  opacity: 0.4;
+  z-index: 0;
+}
+
+/* Modern Input Styles */
+.input-modern {
+  width: 100%;
+  padding: var(--space-4) var(--space-5);
+  background: rgba(17, 24, 39, 0.7);
+  border: 2px solid rgba(55, 65, 81, 0.5);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-base);
+  color: white;
+  transition: all 0.2s ease;
+}
+
+.input-modern:focus {
+  outline: none;
+  border-color: var(--color-primary-500);
+  background: rgba(17, 24, 39, 0.9);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1), var(--glow-primary);
+}
+
+/* Neumorphism Card Style */
+.card-neumorphic {
+  background: linear-gradient(145deg, #1e293b, #0f172a);
+  box-shadow: 20px 20px 60px #0a0f1a,
+              -20px -20px 60px #1e293b;
+  border-radius: var(--radius-xl);
+  padding: var(--space-8);
+}
+
+/* Modern Metric Card */
+.metric-card-modern {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.metric-card-modern::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--gradient-primary);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.metric-card-modern:hover::before {
+  opacity: 1;
+}
+
+.metric-card-modern:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-2xl);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Responsive Typography */
+@media (max-width: 768px) {
+  :root {
+    --text-4xl: 2rem;    /* 32px on mobile */
+    --text-5xl: 2.5rem;  /* 40px on mobile */
+    --text-6xl: 3rem;    /* 48px on mobile */
+  }
+}

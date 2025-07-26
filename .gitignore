@@ -93,3 +93,16 @@ personal/
 # Screenshots and temporary images
 Screenshot*.png
 screenshot*.png
+frontend/screenshots/
+
+# Test files
+frontend/*test*.js
+frontend/*test*.cjs
+frontend/jest*.config.js
+
+# Claude settings
+.claude/settings.local.json
+
+# MCP servers
+mcp-servers/
+voice-mcp/
